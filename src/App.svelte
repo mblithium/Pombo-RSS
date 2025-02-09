@@ -1,27 +1,47 @@
 <script>
   import feather from 'feather-icons'
   import xmlParser from 'xml-js';
+  import RSSObj from './lib/mock-rss';
+  import localeDate from './lib/localedate';
+  import Header from './components/headernav.svelte';
+  import Spinner from './components/spinner-loading.svelte';
+    import SpinnerLoading from './components/spinner-loading.svelte';
+
   const ficons = feather.icons;
 
   let posts = $state();
-  $inspect(posts.rss.channel.item)
+  try {
+    $inspect(posts.rss.channel.item)
+  } catch (e) {
+    console.log("Not ready...")
+  }
+  
 
   let url = `https://blogs.kde.org/index.xml`;
-  
-  let rss = fetch(`https://proxy.corsfix.com/?${url}`, { mode: 'cors', method: 'GET', headers: { 'Content-Type': 'application/xml' } })
+
+  let mock = new Promise((resolve, reject) => {
+    setTimeout(() => { 
+      posts = RSSObj;
+      resolve(RSSObj) 
+    }, 3000)
+  })
+
+  /*
+  let rss = fetch(`https://proxy.corsfix.com/?${url}`, { mode: 'cors', method: 'GET', headers: { 'Content-Type': 'application/rss+xml' } })
       .then(response => response.text())
       .then((text) => {  
-        let toXML = xmlParser.xml2js(text, { compact: true } )
-        posts = toXML
+        let toXML = xmlParser.xml2js(text, { compact: true } );
+        posts = toXML;
+        console.log(toXML);
         return toXML
       })
-      .catch(err => console.log(err) )
-
+      .catch(err => console.log(err) );
+  */
  
 
 </script>
 
-<header><h1>Pombo RSS</h1></header>
+<Header />
 
 <div id="notification-area">
   <h2>Você tem 12 notificações!</h2>
@@ -30,10 +50,9 @@
 <main>
 
 
-  {#await rss}
-    <p>Carregando...</p>
+  {#await mock}
+    <br><SpinnerLoading />
   {:then respostas}
-    <p>Dados carregados</p>
     {#if posts.rss.channel.item}
       {#each posts.rss.channel.item as postitem}
         <div id="home-lista-rss" class="lista-rss">
@@ -44,7 +63,7 @@
           <p><a href={postitem.link._text || '#'}>{postitem.title._text || 'Sem título'}</a></p>
         </div>
         <div class="lista-rss-data lista-item">
-          <p>{postitem.pubDate._text || 'Sem data'}</p>
+          <p>{localeDate(postitem.pubDate._text) || 'Sem data'}</p>
         </div>
     </div>
       {/each}
@@ -53,21 +72,6 @@
   <p>Ops algo deu errado: {error.message}</p>
   {/await}
 
-  {#if posts}
-    <div id="home-lista-rss" class="lista-rss">
-        <div class="lista-site-icon lista-item">
-          {@html ficons.feather.toSvg()}
-        </div>
-        <div class="lista-rss-title lista-item">
-          <p>texto</p>
-        </div>
-        <div class="lista-rss-data lista-item">
-          <p>05/02/2025</p>
-        </div>
-    </div>
-  {/if} 
-
-  
 </main>
 
 <div id="bottom-nav-bar">
@@ -77,12 +81,6 @@
 </div>
 
 <style>
-  header {
-    background-color: var(--babypowder);
-    color: var(--eerie-black);
-    padding: 1em;
-  }
-
   main {
     padding: 1em;
   }
@@ -123,6 +121,8 @@
     display: flex;
     width: 100%;
     flex-direction: row;
+    padding: 10px;
+    border-bottom: 1px solid #0000002e;
   }
 
   .lista-item {
