@@ -7,6 +7,8 @@ const manifest = {
   "short_name": 'Pombo RSS',
   "description": 'Leia suas notícias em qualquer lugar',
   "theme_color": '#ffffff',
+  "orientation": "portrait",
+  "id": "/Pombo-RSS/",
   "icons": [
     {
       "src": "pwa-64x64.png",
@@ -40,7 +42,8 @@ export default defineConfig({
     svelte(), 
     VitePWA({ 
       registerType: 'autoUpdate', 
-      injectRegister: 'auto' 
+      injectRegister: 'auto',
+      manifest: manifest
     })
   ],
 })
