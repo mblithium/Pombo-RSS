@@ -10,6 +10,8 @@
   const ficons = feather.icons;
 
   let posts = $state();
+  let notifications = $state( { c: 0 });
+
   try {
     $inspect(posts.rss.channel.item)
   } catch (e) {
@@ -22,8 +24,9 @@
   let mock = new Promise((resolve, reject) => {
     setTimeout(() => { 
       posts = RSSObj;
+      notifications.c = posts?.rss?.channel?.item?.length || 0;
       resolve(RSSObj) 
-    }, 3000)
+    }, 2000)
   })
 
   /*
@@ -44,34 +47,33 @@
 <Header />
 
 <div id="notification-area">
-  <h2>Você tem 12 notificações!</h2>
+  <h2>Você tem {notifications.c} notificações!</h2>
 </div>
 
 <main>
 
-
-  {#await mock}
-    <br><SpinnerLoading />
-  {:then respostas}
-    {#if posts.rss.channel.item}
-      {#each posts.rss.channel.item as postitem}
-        <div id="home-lista-rss" class="lista-rss">
-        <div class="lista-site-icon lista-item">
-          {@html ficons.feather.toSvg()}
+  
+    {#await mock}
+      <br><SpinnerLoading />
+    {:then respostas}
+      {#if posts.rss.channel.item}
+        {#each posts.rss.channel.item as postitem}
+        <div class="lista-rss-item">
+          <div class="lista-site-icon lista-rss-dados">
+            {@html ficons.feather.toSvg()}
+          </div>
+          <div class="lista-rss-title lista-rss-dados">
+            <p><a href={postitem.link._text || '#'}>{postitem.title._text || 'Sem título'}</a></p>
+          </div>
+          <div class="lista-rss-data lista-rss-dados">
+            <p>{localeDate(postitem.pubDate._text) || 'Sem data'}</p>
+          </div>
         </div>
-        <div class="lista-rss-title lista-item">
-          <p><a href={postitem.link._text || '#'}>{postitem.title._text || 'Sem título'}</a></p>
-        </div>
-        <div class="lista-rss-data lista-item">
-          <p>{localeDate(postitem.pubDate._text) || 'Sem data'}</p>
-        </div>
-    </div>
-      {/each}
-    {/if}
-  {:catch error}
-  <p>Ops algo deu errado: {error.message}</p>
-  {/await}
-
+        {/each}
+      {/if}
+    {:catch error}
+    <p>Ops algo deu errado: {error.message}</p>
+    {/await}
 </main>
 
 <div id="bottom-nav-bar">
@@ -103,21 +105,16 @@
     align-items: center;
   }
 
-  #bottom-nav-bar div svg {
-    width: 24px;
-    height: 24px;
-  }
-
   #notification-area {
     padding: 1em;
   }
 
-  #notification-area h1 {
+  #notification-area h2 {
     font-size: 1.5rem;
   }
  
 
-  #home-lista-rss {
+  .lista-rss-item {
     display: flex;
     width: 100%;
     flex-direction: row;
@@ -125,7 +122,7 @@
     border-bottom: 1px solid #0000002e;
   }
 
-  .lista-item {
+  .lista-rss-dados {
     display: flex;
     width: 100%;
   }
